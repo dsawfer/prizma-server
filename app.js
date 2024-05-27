@@ -1,8 +1,4 @@
 const createExpressServer = require('./express');
-const createWebsocket = require('./websocket');
-const Metrics = require('./metrics');
+require('./websocket');
 
-const metrics = new Metrics();
-
-createExpressServer(metrics);
-createWebsocket(metrics);
+createExpressServer();

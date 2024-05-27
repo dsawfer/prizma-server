@@ -1,8 +1,9 @@
 const express = require('express');
+const { sendMessage } = require('./websocket');
 
 const PORT = 3000;
 
-const createExpressServer = (metrics) => {
+const createExpressServer = () => {
   const app = express();
 
   app.use(express.static('public'));
@@ -28,48 +29,42 @@ const createExpressServer = (metrics) => {
     res.send('Welcome');
   });
 
-  app.post('/init', (req, res) => {
-    res.status(200).type('application/json');
-    metrics.reset();
-    res.send({ result: {}, success: true });
-  });
-
   app.get('/status', (req, res) => {
     res.status(200).type('application/json');
     res.send({ result: { message: 'Server works' }, success: true });
   });
 
+  app.post('/api/init', (req, res) => {
+    res.status(200).type('application/json');
+    sendMessage({ result: {} }, 'RESET');
+    res.send({ result: {}, success: true });
+  });
+
+  app.post('/api/reset', (req, res) => {
+    res.status(200).type('application/json');
+    sendMessage({ result: {} }, 'RESET');
+    res.send({ result: {}, success: true });
+  });
+
   app.post('/api/metric', (req, res) => {
     res.status(200).type('application/json');
 
-    metrics.push({ name: req.body.name, value: req.body.value });
+    const metric = { name: req.body.name, value: req.body.value };
 
-    // if (!(req.body.name in metrics)) {
-    //   metrics[req.body.name] = req.body.value;
-    //
-    //   res.send({ result: {}, success: true });
-    // } else {
-    //   res.send({
-    //     result: { message: 'metric already exists' },
-    //     success: false,
-    //   });
-    // }
+    sendMessage({ result: { ...metric } }, 'METRIC');
+
+    res.send({ result: {}, success: true });
   });
 
-  app.get('/api/metric', (req, res) => {
-    res.status(200).type('application/json');
-
-    metrics.get(req.body.name);
-
-    // if (req.body.name in metrics) {
-    //   res.send({ result: { value: metrics[req.body.name] }, success: true });
-    // } else {
-    //   res.send({
-    //     result: { message: 'no such metric in storage' },
-    //     success: true,
-    //   });
-    // }
-  });
+  // app.get('/api/metric', (req, res) => {
+  //   res.status(200).type('application/json');
+  //
+  //   metrics.get(req.body.name);
+  // });
+  //
+  // app.listen(PORT, () => {
+  //   console.log(`Server started http://localhost:${PORT}`);
+  // });
 
   app.listen(PORT, () => {
     console.log(`Server started http://localhost:${PORT}`);
